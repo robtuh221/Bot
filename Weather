@@ -1,0 +1,32 @@
+import requests
+import telebot
+from telebot import types
+from datetime import datetime
+token = "5236109238:AAF9rfuJaaWoZRFObTH4-ZTm2eLfxYYYID0"
+bot = telebot.TeleBot(token)
+
+#city = "Moscow,RU"
+appid = "013f67a5296a8e00cf407a727f35ed51"
+
+@bot.message_handler(commands=['start'])
+def start(message):
+  bot.send_message(message.chat.id, 'Здравствуйте! Бот позволяет узнать погоду в разных городах. Введите любой город для отображения текущей погоды и прогноза.')
+
+@bot.message_handler(content_types=['text'])
+def answer(message):
+    city = message.text.lower()
+
+    res = requests.get("http://api.openweathermap.org/data/2.5/weather",
+                       params={'q': city, 'units': 'metric', 'lang': 'ru', 'APPID': appid})
+    i = res.json()
+    #print(i)
+    text =  "\r\nТемпература: " + '{0:+3.0f}'.format(
+                i['main']['temp']) + ' °C' + "\r\nПогодные условия: " + i['weather'][0][
+                       'description'] + "\r\nВосход: " + str(datetime.fromtimestamp(
+                i['sys']['sunrise'])) + "\r\nСкорость ветра: " + str(
+                i['wind']['speed']) + ' м/с'"\r\nВидимость: " + str(
+                i['visibility']) + ' м\r\n' + "____________________________\r\n"
+
+    bot.send_message(message.chat.id, text)
+
+bot.infinity_polling()
